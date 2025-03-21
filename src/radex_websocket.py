@@ -7,7 +7,7 @@ from radexreader import RadexReader
 
 PORT = 8765  # WebSocket server port
 
-async def broadcast_data(websocket, path):
+async def broadcast_data(websocket):
     reader = RadexReader()
     prev = None
     while True:
