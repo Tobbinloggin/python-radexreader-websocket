@@ -20,7 +20,7 @@ async def broadcast_data(websocket):
         await asyncio.sleep(10)  # Delay before reading again
 
 async def main():
-    server = websockets.serve(broadcast_data, "0.0.0.0", PORT)
+    server = await websockets.serve(broadcast_data, "0.0.0.0", PORT)
 
     print(f"WebSocket server running on ws://0.0.0.0:{PORT}")
     await server.wait_closed()
