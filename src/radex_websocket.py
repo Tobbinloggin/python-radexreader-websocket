@@ -24,7 +24,7 @@ async def send_to_all_clients(data):
     if clients:
         await asyncio.gather(*(client.send(data) for client in clients))
 
-async def client_handler(websocket, path):
+async def client_handler(websocket):
     """Handles new WebSocket connections"""
     clients.add(websocket)
     try:
