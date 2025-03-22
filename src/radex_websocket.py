@@ -22,7 +22,7 @@ async def broadcast_data():
                     await send_to_all_clients(data)
                     prev = timestamp
         except Exception as e:
-            print(f"[Broadcast] Error reading or sending data: {e}")
+            print(f"[Broadcast] Error reading or sending data: {e}, {measures}")
         await asyncio.sleep(10)
 
 async def send_to_all_clients(data):
