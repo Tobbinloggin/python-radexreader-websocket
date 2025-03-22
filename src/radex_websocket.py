@@ -9,6 +9,7 @@ clients = set()
 async def broadcast_data():
     reader = RadexReader()
     prev = None
+    measures = None
     while True:
         try:
             measures = reader.read(True)  # Read new radiation data
