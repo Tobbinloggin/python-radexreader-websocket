@@ -9,21 +9,16 @@ clients = set()
 async def broadcast_data():
     reader = RadexReader()
     prev = None
-    measures = None
     while True:
         try:
             measures = reader.read(True)  # Read new radiation data
-            if not measures:
-                print("[Broadcast] Warning: No data received from RadexReader.")
-                continue  # Skip this loop iteration
-            
             for timestamp, measure in measures.items():
                 if timestamp != prev:
                     data = json.dumps({timestamp: measure})
                     await send_to_all_clients(data)
                     prev = timestamp
         except Exception as e:
-            print(f"[Broadcast] Error reading or sending data: {e}, {measures}")
+            print(f"[Broadcast] Error reading or sending data: {e}")
         await asyncio.sleep(10)
 
 async def send_to_all_clients(data):
