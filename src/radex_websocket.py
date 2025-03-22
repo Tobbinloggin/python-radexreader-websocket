@@ -38,7 +38,7 @@ async def send_to_all_clients(data):
                 print(f"[Send] Client send error: {result}. Removing client.")
                 clients.discard(client)
 
-async def client_handler(websocket, path):
+async def client_handler(websocket):
     print("Client connected.")
     clients.add(websocket)
     try:
