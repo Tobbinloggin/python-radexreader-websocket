@@ -12,6 +12,10 @@ async def broadcast_data():
     while True:
         try:
             measures = reader.read(True)  # Read new radiation data
+            if not measures:
+                print("[Broadcast] Warning: No data received from RadexReader.")
+                continue  # Skip this loop iteration
+            
             for timestamp, measure in measures.items():
                 if timestamp != prev:
                     data = json.dumps({timestamp: measure})
