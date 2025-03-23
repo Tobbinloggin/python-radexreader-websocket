@@ -1,10 +1,40 @@
+import os
 import asyncio
 import json
 import websockets
 from radexreader import RadexReader
+from influxdb_client import InfluxDBClient, Point, WriteOptions
 
 PORT = 8765
 clients = set()
+
+# InfluxDB Configuration
+INFLUXDB_URL = os.getenv("INFLUXDB_URL", "http://localhost:8086")
+INFLUXDB_TOKEN = os.getenv("INFLUXDB_TOKEN", "your-influxdb-token")
+INFLUXDB_ORG = os.getenv("INFLUXDB_ORG", "your-org")
+INFLUXDB_BUCKET = os.getenv("INFLUXDB_BUCKET", "bucket-name")
+
+# Initialize InfluxDB client
+client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
+write_api = client.write_api(write_options=WriteOptions(batch_size=1))
+
+async def save_to_influxdb(timestamp, measure):
+    """Save radiation data to InfluxDB."""
+    try:
+        point = Point("radiation") \
+            .time(datetime.datetime.utcfromtimestamp(timestamp)) \
+            .field("pct", measure["pct"]) \
+            .field("min", measure["min"]) \
+            .field("val", measure["val"]) \
+            .field("max", measure["max"]) \
+            .field("acc", measure["acc"]) \
+            .field("cpm", measure["cpm"])
+
+        write_api.write(bucket=INFLUXDB_BUCKET, record=point)
+        print(f"[InfluxDB] Saved data: {timestamp} -> {measure}")
+
+    except Exception as e:
+        print(f"[InfluxDB] Error writing to database: {e}")
 
 async def broadcast_data():
     reader = RadexReader()
@@ -15,7 +45,15 @@ async def broadcast_data():
             for timestamp, measure in measures.items():
                 if timestamp != prev:
                     data = json.dumps({timestamp: measure})
-                    await send_to_all_clients(data)
+                    
+                    # Create and track tasks for error handling
+                    send_task = asyncio.create_task(send_to_all_clients(data))
+                    influx_task = asyncio.create_task(save_to_influxdb(timestamp, measure))
+
+                    # Monitor task completion to catch failures
+                    send_task.add_done_callback(handle_task_error)
+                    influx_task.add_done_callback(handle_task_error)
+                    
                     prev = timestamp
         except Exception as e:
             print(f"[Broadcast] Error reading or sending data: {e}")
