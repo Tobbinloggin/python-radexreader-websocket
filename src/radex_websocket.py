@@ -23,7 +23,7 @@ async def save_to_influxdb(timestamp, measure):
     """Save radiation data to InfluxDB."""
     try:
         point = Point("radiation") \
-            .time(datetime.datetime.utcfromtimestamp(timestamp)) \
+            .time(datetime.datetime.fromtimestamp(timestamp, datetime.UTC)) \
             .field("pct", measure["pct"]) \
             .field("min", measure["min"]) \
             .field("val", measure["val"]) \
