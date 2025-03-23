@@ -117,6 +117,13 @@ async def main():
         for client in clients:
             await client.close()
 
+def handle_task_error(task):
+    """Callback to handle failed tasks created with asyncio.create_task."""
+    try:
+        result = task.result()  # This will raise an exception if the task failed
+    except Exception as e:
+        print(f"[Task Error] Task failed: {e}")
+
 if __name__ == "__main__":
     try:
         asyncio.run(main())
